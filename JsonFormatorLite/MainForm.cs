@@ -22,111 +22,48 @@ namespace Xuld.JsonFormator {
 
         private void formatOrStringifyJson(bool format) {
 
-            // 更新状态栏。
-            lbStatus.Text = "正在解析 JSON...";
-
             // 清空节点。
             tvOjectTree.SuspendLayout();
             tvOjectTree.Nodes.Clear();
 
-            object jsonObject;
-            try {
-                jsonObject = Json.parse(codeEditor.Text, cbUseStrictMode.Checked);
-            } catch (JsonParseException e) {
+            if (codeEditor.TextLength > 0) {
 
+                object jsonObject;
+                try {
+                    jsonObject = Json.parse(codeEditor.Text, cbUseStrictMode.Checked);
+                } catch (JsonParseException e) {
+
+                    tvOjectTree.ResumeLayout();
+
+                    // 更新状态栏。
+                    lbStatus.Text = "格式化错误：" + e.Message + "；行：" + e.startLine + "，列：" + e.startColumn;
+
+                    var start = codeEditor.GetFirstCharIndexFromLine(e.startLine - 1) + e.startColumn - 1;
+                    var end = codeEditor.GetFirstCharIndexFromLine(e.endLine - 1) + e.endColumn - 1;
+                    codeEditor.Select(start, end - start);
+                    codeEditor.ScrollToCaret();
+
+                    return;
+                }
+
+                // 显示格式化或转字符串后的源码。
+                codeEditor.Text = Json.stringify(jsonObject, format);
+
+                // 显示格式化后的对象树。
+                tvOjectTree.BeginUpdate();
+                addTreeNode(tvOjectTree.Nodes, "JSON", jsonObject);
+                tvOjectTree.EndUpdate();
+
+                // 默认展开 1 级。
+                foreach (TreeNode node in tvOjectTree.Nodes) {
+                    node.Expand();
+                }
                 tvOjectTree.ResumeLayout();
 
-                // 更新状态栏。
-                lbStatus.Text = "格式化错误：" + e.Message + "；行：" + e.startLine + "，列：" + e.startColumn;
-
-                var start = codeEditor.GetFirstCharIndexFromLine(e.startLine - 1) + e.startColumn - 1;
-                var end = codeEditor.GetFirstCharIndexFromLine(e.endLine - 1) + e.endColumn - 1;
-                codeEditor.Select(start, end - start);
-                codeEditor.ScrollToCaret();
-
-                return ;
             }
-
-            lbStatus.Text = "正在格式化...";
-
-            // 显示格式化或转字符串后的源码。
-            codeEditor.Text = Json.stringify(jsonObject, format);
-
-            // 显示格式化后的对象树。
-            TreeNode rootNode = createTreeNode("JSON", jsonObject);
-            tvOjectTree.Nodes.Add(rootNode);
-
-            // addTreeNode(tvOjectTree.Nodes, "JSON", jsonObject);
-
-            // 默认展开 1 级。
-            foreach (TreeNode node in tvOjectTree.Nodes) {
-                node.Expand();
-            }
-            tvOjectTree.ResumeLayout();
 
             lbStatus.Text = "格式化成功";
-            
-        }
 
-        private TreeNode createTreeNode(string label, object value) {
-            var node = new TreeNode();
-
-            string text = null;
-
-            if (value is JsonObject) {
-                node.ImageIndex = 2;
-                node.Tag = value;
-
-                if (((JsonObject) value).Count > 0) {
-                    node.Nodes.Add(new TreeNode());
-                }
-
-            } else if (value is JsonArray) {
-                node.ImageIndex = 1;
-                node.Tag = value;
-
-                if (((JsonArray)value).Count > 0) {
-                    node.Nodes.Add(new TreeNode());
-                }
-
-            } else {
-                node.ImageIndex = 0;
-                text = Json.stringify(value);
-            }
-
-            if (text != null) {
-                label = label == null ? text : (label + " : " + text);
-            }
-
-            node.ToolTipText = node.Text = label;
-            node.SelectedImageIndex = node.ImageIndex;
-
-
-            return node;
-
-        }
-
-        private void tvOjectTree_BeforeExpand(object sender, TreeViewCancelEventArgs e) {
-            if (e.Node.Tag != null) {
-
-                // 删除默认添加的空节点。
-                tvOjectTree.SuspendLayout();
-
-                e.Node.Nodes.Clear();
-
-                if (e.Node.Tag is JsonObject) {
-                    foreach (var vk in (JsonObject) e.Node.Tag) {
-                        e.Node.Nodes.Add(createTreeNode(vk.Key, vk.Value));
-                    }
-                } else {
-                    var i = 0;
-                    foreach (var v in (JsonArray)e.Node.Tag) {
-                        e.Node.Nodes.Add(createTreeNode(i++.ToString(),v));
-                    }
-                }
-                e.Node.Tag = null;
-                tvOjectTree.ResumeLayout();
-            }
         }
 
         private static void addTreeNode(TreeNodeCollection parent, string label, object value) {
@@ -161,14 +98,16 @@ namespace Xuld.JsonFormator {
                 label = label == null ? text : (label + " : " + text);
             }
 
-            node.ToolTipText = node.Text = label;
+            node.Text = label;
+            node.ToolTipText = text;
             node.SelectedImageIndex = node.ImageIndex;
 
 
         }
 
         private void miPasteAndFormat_Click(object sender, EventArgs e) {
-            codeEditor.Text = Clipboard.GetText();
+            codeEditor.Clear();
+            codeEditor.Paste();
             miFormat_Click(sender, e);
         }
 
