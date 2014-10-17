@@ -24,7 +24,7 @@
         /// </summary>
         private void InitializeComponent() {
             this.components = new System.ComponentModel.Container();
-            Xuld.JsonFormator.Properties.Settings settings2 = new Xuld.JsonFormator.Properties.Settings();
+            Xuld.JsonFormator.Properties.Settings settings1 = new Xuld.JsonFormator.Properties.Settings();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(MainForm));
             this.msMain = new System.Windows.Forms.MenuStrip();
             this.miPasteAndFormat = new System.Windows.Forms.ToolStripMenuItem();
@@ -142,10 +142,10 @@
             // 
             this.cbUseStrictMode.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Right)));
             this.cbUseStrictMode.AutoSize = true;
-            settings2.cbStrictMode = false;
-            settings2.SettingsKey = "";
-            this.cbUseStrictMode.Checked = settings2.cbStrictMode;
-            this.cbUseStrictMode.DataBindings.Add(new System.Windows.Forms.Binding("Checked", settings2, "cbStrictMode", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
+            settings1.cbStrictMode = false;
+            settings1.SettingsKey = "";
+            this.cbUseStrictMode.Checked = settings1.cbStrictMode;
+            this.cbUseStrictMode.DataBindings.Add(new System.Windows.Forms.Binding("Checked", settings1, "cbStrictMode", true, System.Windows.Forms.DataSourceUpdateMode.OnPropertyChanged));
             this.cbUseStrictMode.Location = new System.Drawing.Point(673, 3);
             this.cbUseStrictMode.Name = "cbUseStrictMode";
             this.cbUseStrictMode.Size = new System.Drawing.Size(113, 19);
@@ -286,6 +286,7 @@
             this.tvOjectTree.ShowNodeToolTips = true;
             this.tvOjectTree.Size = new System.Drawing.Size(772, 486);
             this.tvOjectTree.TabIndex = 0;
+            this.tvOjectTree.BeforeExpand += new System.Windows.Forms.TreeViewCancelEventHandler(this.tvOjectTree_BeforeExpand);
             // 
             // codeEditor
             // 
